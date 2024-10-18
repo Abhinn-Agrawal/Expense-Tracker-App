@@ -55,8 +55,10 @@ class HomeScreenViewModel(dao:ExpenseDao):ViewModel() {
         else if(item.category == "Youtube"){
             return R.drawable.ic_youtube
         }
-        else if(item.type == "Income")
-            return R.drawable.ic_income
+        else if(item.category == "Other") {
+            if (item.type == "Income")
+                return R.drawable.ic_income
+        }
         return R.drawable.ic_expense
     }
 }
