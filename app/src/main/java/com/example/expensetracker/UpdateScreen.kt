@@ -1,15 +1,18 @@
-package com.example.expensetracker.addExpense
+package com.example.expensetracker
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -40,22 +43,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.expensetracker.R
-import com.example.expensetracker.widget.Utils
 import com.example.expensetracker.data.ExpenseEntity
 import com.example.expensetracker.widget.ExpenseText
+import com.example.expensetracker.widget.Utils
+import com.example.expensetracker.widget.Utils.getMillisFromDate
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddExpenseScreen(navController: NavController){
-    val viewModel: AddExpenseViewModel = AddExpenseViewModelFactory(LocalContext.current).create(
-        AddExpenseViewModel::class.java)
+fun UpdateScreen(navController: NavController,expenseEntity: ExpenseEntity){
+    val viewModel: UpdateExpenseViewModel = UpdateExpenseViewModelFactory(LocalContext.current).create(
+        UpdateExpenseViewModel::class.java)
     val coroutineScope = rememberCoroutineScope()
     Surface(modifier = Modifier.fillMaxSize()) {
         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
@@ -86,7 +87,7 @@ fun AddExpenseScreen(navController: NavController){
                             navController.popBackStack()
                         }
                 )
-                ExpenseText(text ="Add Expense",
+                ExpenseText(text ="Update Expense",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -105,10 +106,17 @@ fun AddExpenseScreen(navController: NavController){
                     top.linkTo(nameRow.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                },
-                onAddExpenseClicked = {
+                }, expenseEntity,
+                onUpdateExpenseClicked = {
                     coroutineScope.launch {
-                        if(viewModel.addExpense(it)){
+                        if (viewModel.updateExpense(it)) {
+                            navController.popBackStack()
+                        }
+                    }
+                },
+                onDeleteExpenseClicked = {
+                    coroutineScope.launch {
+                        if(viewModel.deleteExpense(it)){
                             navController.popBackStack()
                         }
                     }
@@ -119,13 +127,13 @@ fun AddExpenseScreen(navController: NavController){
 }
 
 @Composable
-fun DataForm(modifier:Modifier, onAddExpenseClicked:(model: ExpenseEntity)->Unit){
-    val name = remember{ mutableStateOf("") }
-    val amount = remember{ mutableStateOf("") }
-    val date = remember{ mutableLongStateOf(0L) }
+fun DataForm(modifier: Modifier, expenseEntity: ExpenseEntity ,onUpdateExpenseClicked:(model: ExpenseEntity)->Unit,onDeleteExpenseClicked:(model: ExpenseEntity)->Unit){
+    val name = remember{ mutableStateOf(expenseEntity.title) }
+    val amount = remember{ mutableStateOf(expenseEntity.amount.toString()) }
+    val date = remember{ mutableLongStateOf(getMillisFromDate(expenseEntity.date)) }
     val dateDialogVisibility = remember { mutableStateOf(false) }
-    val category = remember{ mutableStateOf("") }
-    val type = remember{ mutableStateOf("") }
+    val category = remember{ mutableStateOf(expenseEntity.category) }
+    val type = remember{ mutableStateOf(expenseEntity.type) }
 
     Column(modifier = modifier
         .padding(16.dp)
@@ -135,17 +143,21 @@ fun DataForm(modifier:Modifier, onAddExpenseClicked:(model: ExpenseEntity)->Unit
         .background(Color.White)
         .padding(16.dp)
         .verticalScroll(rememberScrollState())
-    ){
+    ) {
         ExpenseText(text = "Name", fontSize = 16.sp)
-        OutlinedTextField(value = name.value, onValueChange ={ name.value = it}, modifier = Modifier
-            .fillMaxWidth(),
+        OutlinedTextField(value = name.value,
+            onValueChange = { name.value = it },
+            modifier = Modifier
+                .fillMaxWidth(),
             placeholder = { ExpenseText(text = "Enter Expense Name") }
         )
 
         Spacer(modifier = Modifier.size(8.dp))
         ExpenseText(text = "Amount", fontSize = 16.sp)
-        OutlinedTextField(value = amount.value, onValueChange = {amount.value = it}, modifier = Modifier
-            .fillMaxWidth(),
+        OutlinedTextField(value = amount.value,
+            onValueChange = { amount.value = it },
+            modifier = Modifier
+                .fillMaxWidth(),
             placeholder = { ExpenseText(text = "Enter Amount") }
         )
 
@@ -169,42 +181,62 @@ fun DataForm(modifier:Modifier, onAddExpenseClicked:(model: ExpenseEntity)->Unit
         Spacer(modifier = Modifier.size(8.dp))
         ExpenseText(text = "Type", fontSize = 16.sp)
         Spacer(modifier = Modifier.size(4.dp))
-        ExpenseDropDown(list = listOf("Income","Expense")) {
+        ExpenseDropDown(list = listOf("Income", "Expense")) {
             type.value = it
         }
 
         Spacer(modifier = Modifier.size(8.dp))
         ExpenseText(text = "Category", fontSize = 16.sp)
         Spacer(modifier = Modifier.size(4.dp))
-        ExpenseDropDown(list = listOf("Salary","Netflix", "Paypal", "Starbucks", "Youtube", "Upwork","Other")) {
-           category.value = it
+        ExpenseDropDown(
+            list = listOf(
+                "Salary",
+                "Netflix",
+                "Paypal",
+                "Starbucks",
+                "Youtube",
+                "Upwork",
+                "Other"
+            )
+        ) {
+            category.value = it
         }
 
         Spacer(modifier = Modifier.size(16.dp))
-        Button(onClick = {
-                val model = ExpenseEntity(null,
-                    name.value,
-                    amount.value.toDoubleOrNull()?: 0.0,
-                    Utils.formatDateToReadableForm(date.value),
-                    category.value,
-                    type.value
-                )
-            onAddExpenseClicked(model)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            ExpenseText(text = "Add Expense", fontSize = 16.sp)
-        }
-        if(dateDialogVisibility.value) {
-            ExpenseDatePickerDialog(
-                onDateSelect = {
-                    date.value = it
-                    dateDialogVisibility.value = false
-                },
-                onDismiss = {
-                    dateDialogVisibility.value = false
+        Row (horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()){
+            Button(
+                onClick = {
+                    val model = ExpenseEntity(
+                        expenseEntity.id,
+                        name.value,
+                        amount.value.toDoubleOrNull() ?: 0.0,
+                        Utils.formatDateToReadableForm(date.value),
+                        category.value,
+                        type.value
+                    )
+                    onUpdateExpenseClicked(model)
                 }
-            )
+            ) {
+                ExpenseText(text = "Update Expense", fontSize = 16.sp)
+            }
+            Button(
+                onClick = {
+                    onDeleteExpenseClicked(expenseEntity)
+                }
+            ) {
+                ExpenseText(text = "Delete Expense", fontSize = 16.sp)
+            }
+            if (dateDialogVisibility.value) {
+                ExpenseDatePickerDialog(
+                    onDateSelect = {
+                        date.value = it
+                        dateDialogVisibility.value = false
+                    },
+                    onDismiss = {
+                        dateDialogVisibility.value = false
+                    }
+                )
+            }
         }
     }
 }
@@ -223,9 +255,10 @@ fun ExpenseDatePickerDialog(
         } },
         dismissButton = { TextButton(onClick = { onDismiss()}) {
             ExpenseText(text = "Cancel")
-        }}
-        ) {
-            DatePicker(state = datePickerState)
+        }
+        }
+    ) {
+        DatePicker(state = datePickerState)
     }
 }
 
@@ -247,7 +280,7 @@ fun ExpenseDropDown(list : List<String> , onItemSelected:(item:String)-> Unit){
         )
         ExposedDropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false}) {
             list.forEach{
-                DropdownMenuItem(text = { ExpenseText(text = it)},
+                DropdownMenuItem(text = { ExpenseText(text = it) },
                     onClick = {
                         selectedItem.value = it
                         onItemSelected(selectedItem.value)
@@ -257,10 +290,4 @@ fun ExpenseDropDown(list : List<String> , onItemSelected:(item:String)-> Unit){
             }
         }
     }
-}
-
-@Composable
-@Preview(showBackground = true)
-fun AddExpensePreview(){
-    AddExpenseScreen(navController = rememberNavController())
 }

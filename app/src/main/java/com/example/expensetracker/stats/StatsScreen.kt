@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,14 +30,20 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.R
+import com.example.expensetracker.SharedViewModel
+import com.example.expensetracker.data.ExpenseEntity
+import com.example.expensetracker.home.TransactionItem
 import com.example.expensetracker.home.TransactionList
+import com.example.expensetracker.navigation.ScreenRoute
 import com.example.expensetracker.widget.ExpenseText
 import com.example.expensetracker.widget.Utils
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 
 @Composable
 fun StatsScreen(navController: NavController) {
@@ -76,7 +85,37 @@ fun StatsScreen(navController: NavController) {
             val entries = viewModel.getEntriesForChart(dataState.value)
             LineChart(entries = entries)
             Spacer(modifier = Modifier.height(16.dp))
-            TransactionList(modifier = Modifier, list = topExpenses.value, title = "Top Spendings")
+            TransactionList2(
+                modifier = Modifier, list = topExpenses.value, title = "Top Spendings")
+        }
+    }
+}
+
+@Composable
+fun TransactionList2(modifier: Modifier, list : List<ExpenseEntity>, title: String = "Recent Transactions") {
+    LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
+        item {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                ExpenseText(text = title, fontSize = 20.sp)
+                if(title == "Recent Transactions") {
+                    ExpenseText(
+                        text = "See All",
+                        fontSize = 16.sp,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.size(8.dp))
+        }
+        items(list){item ->
+            TransactionItem(
+                title = item.title,
+                amount = item.amount.toString(),
+                icon = Utils.getItemIcon(item),
+                date = item.date,
+                color = if(item.type == "Income") Color.Green else Color.Red,
+                Modifier
+            )
         }
     }
 }
@@ -110,12 +149,12 @@ fun LineChart(entries:List<Entry>){
         }
 
         lineChart.xAxis.valueFormatter =
-            object : com.github.mikephil.charting.formatter.ValueFormatter() {
+            object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
                     return Utils.formatDateForChart(value.toLong())
                 }
             }
-        lineChart.data = com.github.mikephil.charting.data.LineData(dataSet)
+        lineChart.data = LineData(dataSet)
         lineChart.axisLeft.isEnabled = false
         lineChart.axisRight.isEnabled = false
         lineChart.axisRight.setDrawGridLines(false)

@@ -53,6 +53,8 @@ android {
 dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.room.runtime)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.runtime.livedata)
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
     implementation(libs.kotlin.stdlib)

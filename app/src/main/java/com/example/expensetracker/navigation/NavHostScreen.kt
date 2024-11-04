@@ -15,12 +15,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.R
+import com.example.expensetracker.SharedViewModel
+import com.example.expensetracker.UpdateScreen
 import com.example.expensetracker.addExpense.AddExpenseScreen
 import com.example.expensetracker.home.HomeScreen
 import com.example.expensetracker.stats.StatsScreen
@@ -28,6 +31,7 @@ import com.example.expensetracker.ui.theme.Zinc
 
 @Composable
 fun NavHostScreen() {
+    val sharedViewModel: SharedViewModel = viewModel()
     val navController = rememberNavController()
     var bottomBarVisibility by remember { mutableStateOf(true) }
 
@@ -49,7 +53,7 @@ fun NavHostScreen() {
         ) {
             composable(ScreenRoute.HomeScreenRoute.route) {
                 bottomBarVisibility = true
-                HomeScreen(navController)
+                HomeScreen(navController,sharedViewModel)
             }
             composable(ScreenRoute.AddExpenseScreenRoute.route) {
                 bottomBarVisibility = false
@@ -58,6 +62,15 @@ fun NavHostScreen() {
             composable(ScreenRoute.StatsScreenRoute.route) {
                 bottomBarVisibility = true
                 StatsScreen(navController)
+            }
+            composable(ScreenRoute.UpdateScreenRoute.route) {
+                bottomBarVisibility = false
+                val expense = sharedViewModel.selectedExpense.value
+                expense?.let {
+                    UpdateScreen(navController, it)
+                } ?: run {
+                    navController.navigate(ScreenRoute.HomeScreenRoute.route)
+                }
             }
         }
     }

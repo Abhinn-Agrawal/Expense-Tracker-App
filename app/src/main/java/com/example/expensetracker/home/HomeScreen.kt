@@ -23,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +45,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.R
+import com.example.expensetracker.SharedViewModel
 import com.example.expensetracker.navigation.ScreenRoute
 import com.example.expensetracker.data.ExpenseEntity
 import com.example.expensetracker.widget.ExpenseText
@@ -52,7 +54,7 @@ import com.example.expensetracker.widget.Utils
 
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, sharedViewModel: SharedViewModel) {
 
     val viewModel:HomeScreenViewModel = HomeViewModelFactory(LocalContext.current).create(HomeScreenViewModel::class.java)
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -86,10 +88,10 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier.align(Alignment.CenterEnd)
                 )
             }
-            val state = viewModel.expenses.collectAsState(initial = emptyList())
-            val balance = viewModel.getBalance(state.value)
-            val expenses = viewModel.getTotalExpense(state.value)
-            val income = viewModel.getTotalIncome(state.value)
+            val state by viewModel.expenses.observeAsState(initial = emptyList())
+            val balance = viewModel.getBalance(state)
+            val expenses = viewModel.getTotalExpense(state)
+            val income = viewModel.getTotalIncome(state)
             CardItem(
                 modifier = Modifier.constrainAs(card) {
                     top.linkTo(nameRow.bottom)
@@ -107,7 +109,9 @@ fun HomeScreen(navController: NavController) {
                     bottom.linkTo(parent.bottom)
                     height = Dimension.fillToConstraints
                 },
-                list = state.value,
+                list = state,
+                sharedViewModel = sharedViewModel,
+                navController = navController
             )
             Box(
                 modifier = Modifier
@@ -137,7 +141,7 @@ fun HomeScreen(navController: NavController) {
 
 
 @Composable
-fun TransactionList(modifier: Modifier, list : List<ExpenseEntity>, title: String = "Recent Transactions") {
+fun TransactionList(modifier: Modifier, list : List<ExpenseEntity>, sharedViewModel: SharedViewModel,navController: NavController, title: String = "Recent Transactions") {
     LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
         item {
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -159,7 +163,8 @@ fun TransactionList(modifier: Modifier, list : List<ExpenseEntity>, title: Strin
                 icon = Utils.getItemIcon(item),
                 date = item.date,
                 color = if(item.type == "Income") Color.Green else Color.Red,
-                Modifier
+                Modifier.clickable { sharedViewModel.selectedExpense(item)
+                    navController.navigate(ScreenRoute.UpdateScreenRoute.route) }
             )
         }
     }
@@ -172,7 +177,7 @@ fun TransactionItem(
     icon: Int,
     date: String,
     color: Color,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     Box(
         modifier = modifier
@@ -289,5 +294,5 @@ fun Amount(amount:String,color:Color,size:Int,bold:Boolean = false){
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(rememberNavController())
+    HomeScreen(rememberNavController(), SharedViewModel() )
 }

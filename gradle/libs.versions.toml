@@ -13,6 +13,8 @@ room = "2.6.1"
 navigationCompose = "2.8.3"
 constraintLayoutCompose = "1.0.1"
 constraintlayout = "2.1.4"
+lifecycleLivedataKtx = "2.8.7"
+runtimeLivedata = "1.7.5"
 
 [libraries]
 
@@ -40,6 +42,8 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintLayoutCompose" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -1,7 +1,9 @@
 package com.example.expensetracker.data
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.versionedparcelable.VersionedParcelize
 
 @Entity(tableName = "expense_table")
 data class ExpenseEntity(

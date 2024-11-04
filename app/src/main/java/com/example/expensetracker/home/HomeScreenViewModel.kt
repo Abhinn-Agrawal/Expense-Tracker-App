@@ -1,16 +1,21 @@
 package com.example.expensetracker.home
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.expensetracker.R
-import com.example.expensetracker.widget.Utils
-import com.example.expensetracker.data.ExpenseDatabase
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import com.example.expensetracker.ExpenseRepository
 import com.example.expensetracker.data.ExpenseDao
+import com.example.expensetracker.data.ExpenseDatabase
 import com.example.expensetracker.data.ExpenseEntity
+import com.example.expensetracker.widget.Utils
+import kotlinx.coroutines.launch
 
-class HomeScreenViewModel(dao: ExpenseDao):ViewModel() {
-    val expenses = dao.getAllExpenses()
+class HomeScreenViewModel(val dao: ExpenseDao):ViewModel() {
+    private val repository: ExpenseRepository = ExpenseRepository(dao)
+    val expenses: LiveData<List<ExpenseEntity>> = repository.getAllExpenses().asLiveData()
 
     fun getBalance(list:List<ExpenseEntity>):String{
         var total = 0.00
@@ -40,7 +45,6 @@ class HomeScreenViewModel(dao: ExpenseDao):ViewModel() {
         }
         return Utils.formatToDecimalValue(total)
     }
-
 }
 
 class HomeViewModelFactory(private val context: Context): ViewModelProvider.Factory{
