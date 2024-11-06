@@ -1,4 +1,4 @@
-package com.example.expensetracker
+package com.example.expensetracker.update
 
 import android.content.Context
 import androidx.lifecycle.ViewModel

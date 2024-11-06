@@ -23,7 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.R
 import com.example.expensetracker.SharedViewModel
-import com.example.expensetracker.UpdateScreen
+import com.example.expensetracker.update.UpdateScreen
 import com.example.expensetracker.addExpense.AddExpenseScreen
 import com.example.expensetracker.home.HomeScreen
 import com.example.expensetracker.stats.StatsScreen

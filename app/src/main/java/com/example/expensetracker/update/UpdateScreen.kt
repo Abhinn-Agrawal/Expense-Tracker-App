@@ -1,4 +1,4 @@
-package com.example.expensetracker
+package com.example.expensetracker.update
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
+import com.example.expensetracker.R
 import com.example.expensetracker.data.ExpenseEntity
 import com.example.expensetracker.widget.ExpenseText
 import com.example.expensetracker.widget.Utils
@@ -203,7 +204,7 @@ fun DataForm(modifier: Modifier, expenseEntity: ExpenseEntity ,onUpdateExpenseCl
         }
 
         Spacer(modifier = Modifier.size(16.dp))
-        Row (horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()){
+        Row (horizontalArrangement = Arrangement.SpaceBetween){
             Button(
                 onClick = {
                     val model = ExpenseEntity(
@@ -215,16 +216,17 @@ fun DataForm(modifier: Modifier, expenseEntity: ExpenseEntity ,onUpdateExpenseCl
                         type.value
                     )
                     onUpdateExpenseClicked(model)
-                }
+                }, modifier = Modifier.weight(1f)
             ) {
-                ExpenseText(text = "Update Expense", fontSize = 16.sp)
+                ExpenseText(text = "Update", fontSize = 16.sp,maxLines = 1)
             }
+            Spacer(modifier = Modifier.width(16.dp))
             Button(
                 onClick = {
                     onDeleteExpenseClicked(expenseEntity)
-                }
+                },modifier = Modifier.weight(1f)
             ) {
-                ExpenseText(text = "Delete Expense", fontSize = 16.sp)
+                ExpenseText(text = "Delete", fontSize = 16.sp,maxLines = 1)
             }
             if (dateDialogVisibility.value) {
                 ExpenseDatePickerDialog(
